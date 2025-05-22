@@ -16,6 +16,7 @@ function Admin({ usuario }) {
   const [temas, setTemas] = useState([]);
   const [tematicaSeleccionada, setTematicaSeleccionada] = useState(null);
   const [moduloSeleccionado, setModuloSeleccionado] = useState(null);
+  const [temaSeleccionado, setTemaSeleccionado] = useState(null);
   const [cargandoTematicas, setCargandoTematicas] = useState(true);
   const [cargandoModulos, setCargandoModulos] = useState(false);
   const [cargandoTemas, setCargandoTemas] = useState(false);
@@ -30,6 +31,13 @@ function Admin({ usuario }) {
   }, []);
 
   const seleccionarTematica = (tematica) => {
+    if (tematicaSeleccionada?.id === tematica.id) {
+      setTematicaSeleccionada(null);
+      setModulos([]);
+      setModuloSeleccionado(null);
+      setTemas([]);
+      return;
+    }
     setTematicaSeleccionada(tematica);
     setModuloSeleccionado(null);
     setTemas([]);
@@ -42,6 +50,11 @@ function Admin({ usuario }) {
   };
 
   const seleccionarModulo = (modulo) => {
+    if (moduloSeleccionado?.id === modulo.id) {
+      setModuloSeleccionado(null);
+      setTemas([]);
+      return;
+    }
     setModuloSeleccionado(modulo);
     setTemas([]);
     setCargandoTemas(true);
@@ -195,7 +208,6 @@ function Admin({ usuario }) {
               placeholder="Nombre"
               className="w-full border p-2 rounded"
             />
-            <h4 className="font-semibold">Contendido del tema</h4>
             <ReactQuill
               theme="snow"
               value={contenido}
@@ -207,7 +219,6 @@ function Admin({ usuario }) {
               placeholder="Competencias"
               className="w-full border p-2 rounded"
             />
-            <h4 className="font-semibold">Recursos del tema</h4>
             <ReactQuill
               theme="snow"
               value={recursos}
@@ -228,7 +239,8 @@ function Admin({ usuario }) {
               {temas.map((tema) => (
                 <li
                   key={tema.id}
-                  className="bg-white border rounded p-3 shadow"
+                  className="bg-white border rounded p-3 shadow cursor-pointer"
+                  onClick={() => setTemaSeleccionado(tema)}
                 >
                   <h3 className="font-semibold">{tema.nombre}</h3>
                   <div
@@ -240,6 +252,37 @@ function Admin({ usuario }) {
             </ul>
           )}
         </>
+      )}
+
+      {temaSeleccionado && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-2xl w-full relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => setTemaSeleccionado(null)}
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold mb-2">Vista previa del tema</h2>
+            <h3 className="text-lg font-semibold">{temaSeleccionado.nombre}</h3>
+            <div className="mt-2">
+              <h4 className="font-semibold">Contenido:</h4>
+              <div
+                dangerouslySetInnerHTML={{ __html: temaSeleccionado.contenido }}
+              />
+            </div>
+            <div className="mt-2">
+              <h4 className="font-semibold">Competencias:</h4>
+              <div>{temaSeleccionado.competencias}</div>
+            </div>
+            <div className="mt-2">
+              <h4 className="font-semibold">Recursos:</h4>
+              <div
+                dangerouslySetInnerHTML={{ __html: temaSeleccionado.recursos }}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

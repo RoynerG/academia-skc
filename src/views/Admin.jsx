@@ -17,11 +17,14 @@ function Admin({ usuario }) {
   const [tematicaSeleccionada, setTematicaSeleccionada] = useState(null);
   const [moduloSeleccionado, setModuloSeleccionado] = useState(null);
   const [temaSeleccionado, setTemaSeleccionado] = useState(null);
+  const [mostrarTemas, setMostrarTemas] = useState(false);
+  const [mostrarModalCrearTema, setMostrarModalCrearTema] = useState(false);
   const [cargandoTematicas, setCargandoTematicas] = useState(true);
   const [cargandoModulos, setCargandoModulos] = useState(false);
   const [cargandoTemas, setCargandoTemas] = useState(false);
   const [contenido, setContenido] = useState("");
   const [recursos, setRecursos] = useState("");
+  const [competencias, setCompetencias] = useState("");
 
   useEffect(() => {
     obtenerTematicas()
@@ -36,12 +39,14 @@ function Admin({ usuario }) {
       setModulos([]);
       setModuloSeleccionado(null);
       setTemas([]);
+      setMostrarTemas(false);
       return;
     }
     setTematicaSeleccionada(tematica);
     setModuloSeleccionado(null);
     setTemas([]);
     setModulos([]);
+    setMostrarTemas(false);
     setCargandoModulos(true);
     obtenerModulosPorTematica(tematica.id)
       .then(setModulos)
@@ -53,15 +58,37 @@ function Admin({ usuario }) {
     if (moduloSeleccionado?.id === modulo.id) {
       setModuloSeleccionado(null);
       setTemas([]);
+      setMostrarTemas(false);
       return;
     }
     setModuloSeleccionado(modulo);
     setTemas([]);
+    setMostrarTemas(true);
     setCargandoTemas(true);
     obtenerTemasPorModulo(modulo.id)
       .then(setTemas)
       .catch((err) => console.error("Error cargando temas:", err))
       .finally(() => setCargandoTemas(false));
+  };
+
+  const handleCrearTema = (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      nombre: form.nombre.value,
+      contenido,
+      competencias,
+      recursos,
+      id_modulo: moduloSeleccionado.id,
+    };
+    crearTema(data).then(() => {
+      form.reset();
+      setContenido("");
+      setRecursos("");
+      setCompetencias("");
+      setMostrarModalCrearTema(false);
+      return obtenerTemasPorModulo(moduloSeleccionado.id).then(setTemas);
+    });
   };
 
   return (
@@ -71,8 +98,6 @@ function Admin({ usuario }) {
       </h1>
 
       <h2 className="text-lg font-semibold mb-2">Temáticas:</h2>
-
-      {/* Formulario crear temática */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -120,7 +145,6 @@ function Admin({ usuario }) {
             Módulos de: {tematicaSeleccionada.nombre}
           </h2>
 
-          {/* Formulario crear módulo */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -173,62 +197,18 @@ function Admin({ usuario }) {
         </>
       )}
 
-      {moduloSeleccionado && (
+      {moduloSeleccionado && mostrarTemas && (
         <>
           <h2 className="text-lg font-semibold mb-2">
             Temas del módulo: {moduloSeleccionado.nombre}
           </h2>
 
-          {/* Formulario crear tema */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const form = e.target;
-              const data = {
-                nombre: form.nombre.value,
-                contenido,
-                competencias: form.competencias.value,
-                recursos,
-                id_modulo: moduloSeleccionado.id,
-              };
-              crearTema(data).then(() => {
-                form.reset();
-                setContenido("");
-                setRecursos("");
-                return obtenerTemasPorModulo(moduloSeleccionado.id).then(
-                  setTemas
-                );
-              });
-            }}
-            className="mt-4 space-y-2"
+          <button
+            className="mb-4 bg-purple-600 text-white px-4 py-2 rounded"
+            onClick={() => setMostrarModalCrearTema(true)}
           >
-            <h3 className="font-semibold">Agregar nuevo tema</h3>
-            <input
-              name="nombre"
-              placeholder="Nombre"
-              className="w-full border p-2 rounded"
-            />
-            <ReactQuill
-              theme="snow"
-              value={contenido}
-              onChange={setContenido}
-              className="bg-white mb-2"
-            />
-            <textarea
-              name="competencias"
-              placeholder="Competencias"
-              className="w-full border p-2 rounded"
-            />
-            <ReactQuill
-              theme="snow"
-              value={recursos}
-              onChange={setRecursos}
-              className="bg-white mb-2"
-            />
-            <button className="bg-purple-600 text-white px-4 py-2 rounded">
-              Agregar tema
-            </button>
-          </form>
+            + Agregar nuevo tema
+          </button>
 
           {cargandoTemas ? (
             <p className="text-gray-600">Cargando temas...</p>
@@ -254,9 +234,66 @@ function Admin({ usuario }) {
         </>
       )}
 
+      {mostrarModalCrearTema && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => setMostrarModalCrearTema(false)}
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold mb-4">Agregar nuevo tema</h2>
+            <form onSubmit={handleCrearTema} className="space-y-4">
+              <input
+                name="nombre"
+                placeholder="Nombre"
+                className="w-full border p-2 rounded"
+              />
+
+              <div className="space-y-2">
+                <label className="font-semibold block">Contenido</label>
+                <ReactQuill
+                  theme="snow"
+                  value={contenido}
+                  onChange={setContenido}
+                  className="bg-white h-40 mb-2"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-semibold block">Competencias</label>
+                <ReactQuill
+                  theme="snow"
+                  value={competencias}
+                  onChange={setCompetencias}
+                  className="bg-white h-32 mb-2"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-semibold block">Recursos</label>
+                <ReactQuill
+                  theme="snow"
+                  value={recursos}
+                  onChange={setRecursos}
+                  className="bg-white h-40 mb-2"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button className="bg-purple-600 text-white px-4 py-2 rounded">
+                  Guardar tema
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {temaSeleccionado && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg max-w-2xl w-full relative">
+          <div className="bg-white p-6 rounded shadow-lg max-w-2xl w-full relative max-h-[90vh] overflow-y-auto">
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-black"
               onClick={() => setTemaSeleccionado(null)}
@@ -273,7 +310,11 @@ function Admin({ usuario }) {
             </div>
             <div className="mt-2">
               <h4 className="font-semibold">Competencias:</h4>
-              <div>{temaSeleccionado.competencias}</div>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: temaSeleccionado.competencias,
+                }}
+              />
             </div>
             <div className="mt-2">
               <h4 className="font-semibold">Recursos:</h4>

@@ -61,4 +61,16 @@ export const crearTema = async ({
   return res.data;
 };
 
+//Actualizar tema
+export const actualizarTema = async (id, data) => {
+  const res = await api.put(`/temas/${id}`, data);
+  return res.data;
+};
+
+//Eliminar tema
+export const eliminarTema = async (id) => {
+  const res = await api.delete(`/temas/${id}`);
+  return res.data;
+};
+
 export default api;

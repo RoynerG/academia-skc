@@ -6,9 +6,12 @@ import {
   crearTematica,
   crearModulo,
   crearTema,
+  actualizarTema,
+  eliminarTema,
 } from "../services/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 function Admin({ usuario }) {
   const [tematicas, setTematicas] = useState([]);
@@ -25,6 +28,8 @@ function Admin({ usuario }) {
   const [contenido, setContenido] = useState("");
   const [recursos, setRecursos] = useState("");
   const [competencias, setCompetencias] = useState("");
+  const [mostrarModalEditarTema, setMostrarModalEditarTema] = useState(false);
+  const [temaEditando, setTemaEditando] = useState(null);
 
   useEffect(() => {
     obtenerTematicas()
@@ -219,10 +224,47 @@ function Admin({ usuario }) {
               {temas.map((tema) => (
                 <li
                   key={tema.id}
-                  className="bg-white border rounded p-3 shadow cursor-pointer"
+                  className="bg-white border rounded p-3 shadow relative"
                   onClick={() => setTemaSeleccionado(tema)}
                 >
-                  <h3 className="font-semibold">{tema.nombre}</h3>
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold">{tema.nombre}</h3>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTemaEditando(tema);
+                          setContenido(tema.contenido);
+                          setCompetencias(tema.competencias);
+                          setRecursos(tema.recursos);
+                          setMostrarModalEditarTema(true);
+                        }}
+                        title="Editar"
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <FiEdit size={16} />
+                      </button>
+
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const confirm = window.confirm(
+                            "¿Estás seguro de que deseas eliminar este tema?"
+                          );
+                          if (confirm) {
+                            await eliminarTema(tema.id);
+                            await obtenerTemasPorModulo(
+                              moduloSeleccionado.id
+                            ).then(setTemas);
+                          }
+                        }}
+                        title="Eliminar"
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <FiTrash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
                   <div
                     className="text-sm text-gray-500 mt-1"
                     dangerouslySetInnerHTML={{ __html: tema.competencias }}
@@ -251,7 +293,7 @@ function Admin({ usuario }) {
                 className="w-full border p-2 rounded"
               />
 
-              <div className="space-y-2">
+              <div className="space-y-2 mb-12">
                 <label className="font-semibold block">Contenido</label>
                 <ReactQuill
                   theme="snow"
@@ -261,7 +303,7 @@ function Admin({ usuario }) {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 mb-12">
                 <label className="font-semibold block">Competencias</label>
                 <ReactQuill
                   theme="snow"
@@ -271,7 +313,7 @@ function Admin({ usuario }) {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 mb-12">
                 <label className="font-semibold block">Recursos</label>
                 <ReactQuill
                   theme="snow"
@@ -284,6 +326,89 @@ function Admin({ usuario }) {
               <div className="pt-2">
                 <button className="bg-purple-600 text-white px-4 py-2 rounded">
                   Guardar tema
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {mostrarModalEditarTema && temaEditando && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => {
+                setMostrarModalEditarTema(false);
+                setTemaEditando(null);
+                setContenido("");
+                setCompetencias("");
+                setRecursos("");
+              }}
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold mb-4">Editar tema</h2>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const data = {
+                  nombre: form.nombre.value,
+                  contenido,
+                  competencias,
+                  recursos,
+                };
+                await actualizarTema(temaEditando.id, data);
+                setMostrarModalEditarTema(false);
+                setTemaEditando(null);
+                form.reset();
+                await obtenerTemasPorModulo(moduloSeleccionado.id).then(
+                  setTemas
+                );
+              }}
+              className="space-y-4"
+            >
+              <input
+                name="nombre"
+                defaultValue={temaEditando.nombre}
+                placeholder="Nombre"
+                className="w-full border p-2 rounded"
+              />
+
+              <div className="space-y-2 mb-12">
+                <label className="font-semibold block">Contenido</label>
+                <ReactQuill
+                  theme="snow"
+                  value={contenido}
+                  onChange={setContenido}
+                  className="bg-white h-40 mb-2"
+                />
+              </div>
+
+              <div className="space-y-2 mb-12">
+                <label className="font-semibold block">Competencias</label>
+                <ReactQuill
+                  theme="snow"
+                  value={competencias}
+                  onChange={setCompetencias}
+                  className="bg-white h-32 mb-2"
+                />
+              </div>
+
+              <div className="space-y-2 mb-12">
+                <label className="font-semibold block">Recursos</label>
+                <ReactQuill
+                  theme="snow"
+                  value={recursos}
+                  onChange={setRecursos}
+                  className="bg-white h-40 mb-2"
+                />
+              </div>
+
+              <div className="pt-2 mb-12">
+                <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                  Actualizar tema
                 </button>
               </div>
             </form>

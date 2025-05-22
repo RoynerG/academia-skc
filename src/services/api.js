@@ -18,4 +18,11 @@ export const obtenerTematicas = async () => {
   return res.data;
 };
 
+// Obtener módulos filtrados por id_tematica
+export const obtenerModulosPorTematica = async (id_tematica) => {
+  const res = await api.get("/modulos");
+  // Asumiendo que la API no filtra por backend, filtramos en frontend:
+  return res.data.filter((modulo) => modulo.id_tematica == id_tematica);
+};
+
 export default api;

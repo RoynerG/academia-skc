@@ -25,4 +25,10 @@ export const obtenerModulosPorTematica = async (id_tematica) => {
   return res.data.filter((modulo) => modulo.id_tematica == id_tematica);
 };
 
+// Obtener temas por módulo
+export const obtenerTemasPorModulo = async (id_modulo) => {
+  const res = await api.get("/temas");
+  return res.data.filter((tema) => tema.id_modulo == id_modulo);
+};
+
 export default api;

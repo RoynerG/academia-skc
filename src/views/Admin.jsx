@@ -8,6 +8,8 @@ import {
   crearTema,
   actualizarTema,
   eliminarTema,
+  eliminarModulo,
+  actualizarModulo,
 } from "../services/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -30,6 +32,11 @@ function Admin({ usuario }) {
   const [competencias, setCompetencias] = useState("");
   const [mostrarModalEditarTema, setMostrarModalEditarTema] = useState(false);
   const [temaEditando, setTemaEditando] = useState(null);
+  const [mostrarModalEditarModulo, setMostrarModalEditarModulo] =
+    useState(false);
+  const [moduloEditando, setModuloEditando] = useState(null);
+  const [mostrarModalVistaModulo, setMostrarModalVistaModulo] = useState(false);
+  const [moduloVista, setModuloVista] = useState(null);
 
   useEffect(() => {
     obtenerTematicas()
@@ -194,7 +201,56 @@ function Admin({ usuario }) {
                   }`}
                   onClick={() => seleccionarModulo(m)}
                 >
-                  {m.nombre}
+                  <div className="flex justify-between items-center">
+                    <span>{m.nombre}</span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      ({temas.length} temas)
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModuloEditando(m);
+                          setMostrarModalEditarModulo(true);
+                        }}
+                        className="text-blue-600 hover:text-blue-800"
+                        title="Editar módulo"
+                      >
+                        <FiEdit size={16} />
+                      </button>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const confirm = window.confirm(
+                            "¿Eliminar este módulo?"
+                          );
+                          if (confirm) {
+                            await eliminarModulo(m.id);
+                            await obtenerModulosPorTematica(
+                              tematicaSeleccionada.id
+                            ).then(setModulos);
+                          }
+                        }}
+                        className="text-red-600 hover:text-red-800"
+                        title="Eliminar módulo"
+                      >
+                        <FiTrash2 size={16} />
+                      </button>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const temasDelModulo = await obtenerTemasPorModulo(
+                            m.id
+                          );
+                          setModuloVista({ ...m, temas: temasDelModulo });
+                          setMostrarModalVistaModulo(true);
+                        }}
+                        className="text-gray-600 hover:text-black text-sm underline ml-2"
+                      >
+                        👁 Vista previa
+                      </button>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -416,6 +472,46 @@ function Admin({ usuario }) {
         </div>
       )}
 
+      {mostrarModalEditarModulo && moduloEditando && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => {
+                setMostrarModalEditarModulo(false);
+                setModuloEditando(null);
+              }}
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold mb-4">Editar módulo</h2>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const nombre = e.target.nombre.value;
+                await actualizarModulo(moduloEditando.id, { nombre });
+                setMostrarModalEditarModulo(false);
+                setModuloEditando(null);
+                await obtenerModulosPorTematica(tematicaSeleccionada.id).then(
+                  setModulos
+                );
+              }}
+              className="space-y-4"
+            >
+              <input
+                name="nombre"
+                defaultValue={moduloEditando.nombre}
+                className="w-full border p-2 rounded"
+                placeholder="Nombre del módulo"
+              />
+              <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                Actualizar
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {temaSeleccionado && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg max-w-2xl w-full relative max-h-[90vh] overflow-y-auto">
@@ -447,6 +543,43 @@ function Admin({ usuario }) {
                 dangerouslySetInnerHTML={{ __html: temaSeleccionado.recursos }}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {mostrarModalVistaModulo && moduloVista && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-2xl w-full relative max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => {
+                setMostrarModalVistaModulo(false);
+                setModuloVista(null);
+              }}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-bold mb-2">Vista previa del módulo</h2>
+            <h3 className="text-lg font-semibold mb-4">{moduloVista.nombre}</h3>
+
+            {moduloVista.temas.length === 0 ? (
+              <p className="text-gray-600">Este módulo no tiene temas aún.</p>
+            ) : (
+              <ul className="space-y-3">
+                {moduloVista.temas.map((tema) => (
+                  <li key={tema.id} className="border rounded p-3">
+                    <h4 className="font-semibold text-gray-800">
+                      {tema.nombre}
+                    </h4>
+                    <div
+                      className="text-sm text-gray-600 mt-1 line-clamp-2"
+                      dangerouslySetInnerHTML={{ __html: tema.competencias }}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}

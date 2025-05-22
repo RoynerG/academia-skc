@@ -73,4 +73,15 @@ export const eliminarTema = async (id) => {
   return res.data;
 };
 
+//Actualizar modulo
+export const actualizarModulo = async (id, data) => {
+  const res = await api.put(`/modulos/${id}`, data);
+  return res.data;
+};
+
+//Eliminar modulo
+export const eliminarModulo = async (id) => {
+  const res = await api.delete(`/modulos/${id}`);
+  return res.data;
+};
 export default api;

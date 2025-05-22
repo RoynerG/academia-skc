@@ -10,6 +10,7 @@ import {
   eliminarTema,
   eliminarModulo,
   actualizarModulo,
+  obtenerExamenesPorModulo,
 } from "../services/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -37,6 +38,8 @@ function Admin({ usuario }) {
   const [moduloEditando, setModuloEditando] = useState(null);
   const [mostrarModalVistaModulo, setMostrarModalVistaModulo] = useState(false);
   const [moduloVista, setModuloVista] = useState(null);
+  //const [examenes, setExamenes] = useState([]);
+  //const [mostrarModalCrearExamen, setMostrarModalCrearExamen] = useState(false);
 
   useEffect(() => {
     obtenerTematicas()
@@ -71,6 +74,7 @@ function Admin({ usuario }) {
       setModuloSeleccionado(null);
       setTemas([]);
       setMostrarTemas(false);
+      setExamenes([]);
       return;
     }
     setModuloSeleccionado(modulo);
@@ -81,6 +85,10 @@ function Admin({ usuario }) {
       .then(setTemas)
       .catch((err) => console.error("Error cargando temas:", err))
       .finally(() => setCargandoTemas(false));
+
+    obtenerExamenesPorModulo(modulo.id)
+      .then(setExamenes)
+      .catch((err) => console.error("Error cargando exámenes:", err));
   };
 
   const handleCrearTema = (e) => {

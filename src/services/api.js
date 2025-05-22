@@ -84,4 +84,17 @@ export const eliminarModulo = async (id) => {
   const res = await api.delete(`/modulos/${id}`);
   return res.data;
 };
+
+//Obtener examen de modulos
+export const obtenerExamenesPorModulo = async (id_modulo) => {
+  const res = await api.get(`/examenes/modulo/${id_modulo}`);
+  return res.data;
+};
+
+//Crear examen
+export const crearExamen = async (data) => {
+  const res = await api.post(`/examenes`, data);
+  return res.data;
+};
+
 export default api;

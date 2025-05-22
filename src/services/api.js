@@ -31,4 +31,34 @@ export const obtenerTemasPorModulo = async (id_modulo) => {
   return res.data.filter((tema) => tema.id_modulo == id_modulo);
 };
 
+// Crear una nueva temática
+export const crearTematica = async (nombre) => {
+  const res = await api.post("/tematicas", { nombre });
+  return res.data;
+};
+
+// Crear un nuevo módulo
+export const crearModulo = async ({ nombre, id_tematica }) => {
+  const res = await api.post("/modulos", { nombre, id_tematica });
+  return res.data;
+};
+
+// Crear un nuevo tema
+export const crearTema = async ({
+  nombre,
+  id_modulo,
+  contenido,
+  competencias,
+  recursos,
+}) => {
+  const res = await api.post("/temas", {
+    nombre,
+    id_modulo,
+    contenido,
+    competencias,
+    recursos,
+  });
+  return res.data;
+};
+
 export default api;

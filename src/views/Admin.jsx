@@ -7,6 +7,8 @@ import {
   crearModulo,
   crearTema,
 } from "../services/api";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 function Admin({ usuario }) {
   const [tematicas, setTematicas] = useState([]);
@@ -17,6 +19,8 @@ function Admin({ usuario }) {
   const [cargandoTematicas, setCargandoTematicas] = useState(true);
   const [cargandoModulos, setCargandoModulos] = useState(false);
   const [cargandoTemas, setCargandoTemas] = useState(false);
+  const [contenido, setContenido] = useState("");
+  const [recursos, setRecursos] = useState("");
 
   useEffect(() => {
     obtenerTematicas()
@@ -53,9 +57,9 @@ function Admin({ usuario }) {
         Panel Admin - {usuario.nombre}
       </h1>
 
-      <h2 className="text-lg font-semibold mb-2">Lineas temáticas:</h2>
+      <h2 className="text-lg font-semibold mb-2">Temáticas:</h2>
 
-      {/* Formulario crear linea temática */}
+      {/* Formulario crear temática */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -71,7 +75,7 @@ function Admin({ usuario }) {
         <input
           type="text"
           name="nombre"
-          placeholder="Nueva linea temática"
+          placeholder="Nueva temática"
           className="border p-2 rounded w-full"
         />
         <button className="bg-blue-600 text-white px-4 py-2 rounded">
@@ -80,7 +84,7 @@ function Admin({ usuario }) {
       </form>
 
       {cargandoTematicas ? (
-        <p className="text-gray-600">Cargando lineas temáticas...</p>
+        <p className="text-gray-600">Cargando temáticas...</p>
       ) : (
         <ul className="space-y-2 mb-6">
           {tematicas.map((t) => (
@@ -169,13 +173,15 @@ function Admin({ usuario }) {
               const form = e.target;
               const data = {
                 nombre: form.nombre.value,
-                contenido: form.contenido.value,
+                contenido,
                 competencias: form.competencias.value,
-                recursos: form.recursos.value,
+                recursos,
                 id_modulo: moduloSeleccionado.id,
               };
               crearTema(data).then(() => {
                 form.reset();
+                setContenido("");
+                setRecursos("");
                 return obtenerTemasPorModulo(moduloSeleccionado.id).then(
                   setTemas
                 );
@@ -189,20 +195,24 @@ function Admin({ usuario }) {
               placeholder="Nombre"
               className="w-full border p-2 rounded"
             />
-            <textarea
-              name="contenido"
-              placeholder="Contenido"
-              className="w-full border p-2 rounded"
+            <h4 className="font-semibold">Contendido del tema</h4>
+            <ReactQuill
+              theme="snow"
+              value={contenido}
+              onChange={setContenido}
+              className="bg-white mb-2"
             />
             <textarea
               name="competencias"
               placeholder="Competencias"
               className="w-full border p-2 rounded"
             />
-            <textarea
-              name="recursos"
-              placeholder="Recursos"
-              className="w-full border p-2 rounded"
+            <h4 className="font-semibold">Recursos del tema</h4>
+            <ReactQuill
+              theme="snow"
+              value={recursos}
+              onChange={setRecursos}
+              className="bg-white mb-2"
             />
             <button className="bg-purple-600 text-white px-4 py-2 rounded">
               Agregar tema
@@ -221,9 +231,10 @@ function Admin({ usuario }) {
                   className="bg-white border rounded p-3 shadow"
                 >
                   <h3 className="font-semibold">{tema.nombre}</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {tema.competencias}
-                  </p>
+                  <div
+                    className="text-sm text-gray-500 mt-1"
+                    dangerouslySetInnerHTML={{ __html: tema.competencias }}
+                  />
                 </li>
               ))}
             </ul>

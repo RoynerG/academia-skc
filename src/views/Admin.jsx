@@ -11,6 +11,7 @@ import {
   eliminarModulo,
   actualizarModulo,
   obtenerExamenesPorModulo,
+  crearExamen,
 } from "../services/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -38,8 +39,8 @@ function Admin({ usuario }) {
   const [moduloEditando, setModuloEditando] = useState(null);
   const [mostrarModalVistaModulo, setMostrarModalVistaModulo] = useState(false);
   const [moduloVista, setModuloVista] = useState(null);
-  //const [examenes, setExamenes] = useState([]);
-  //const [mostrarModalCrearExamen, setMostrarModalCrearExamen] = useState(false);
+  const [examenes, setExamenes] = useState([]);
+  const [mostrarModalCrearExamen, setMostrarModalCrearExamen] = useState(false);
 
   useEffect(() => {
     obtenerTematicas()
@@ -337,6 +338,47 @@ function Admin({ usuario }) {
               ))}
             </ul>
           )}
+          <h2 className="text-lg font-semibold mt-6">Exámenes del módulo</h2>
+
+          <button
+            className="mb-4 bg-indigo-600 text-white px-4 py-2 rounded"
+            onClick={() => setMostrarModalCrearExamen(true)}
+          >
+            + Crear examen
+          </button>
+
+          {examenes.length === 0 ? (
+            <p className="text-gray-600">No hay exámenes registrados.</p>
+          ) : (
+            <ul className="space-y-2">
+              {examenes.map((ex) => (
+                <li
+                  key={ex.id}
+                  className="border p-3 rounded shadow-sm bg-white"
+                >
+                  <h3
+                    onClick={async () => {
+                      setExamenSeleccionado(ex);
+                      const data = await obtenerPreguntasPorExamen(ex.id);
+                      setPreguntas(data);
+                      setMostrarModalPreguntas(true);
+                    }}
+                    className="font-semibold text-indigo-700 hover:underline cursor-pointer"
+                  >
+                    {ex.nombre}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Duración: {ex.duracion} min · Estado:{" "}
+                    <span
+                      className={ex.activo ? "text-green-600" : "text-red-600"}
+                    >
+                      {ex.activo ? "Activo" : "Inactivo"}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
         </>
       )}
 
@@ -392,6 +434,67 @@ function Admin({ usuario }) {
                   Guardar tema
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {mostrarModalCrearExamen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-xl relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => setMostrarModalCrearExamen(false)}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-bold mb-4">Crear nuevo examen</h2>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const data = {
+                  id_modulo: moduloSeleccionado.id,
+                  nombre: form.nombre.value,
+                  instrucciones: form.instrucciones.value,
+                  duracion: parseInt(form.duracion.value),
+                };
+                await crearExamen(data);
+                setMostrarModalCrearExamen(false);
+                form.reset();
+                const nuevos = await obtenerExamenesPorModulo(
+                  moduloSeleccionado.id
+                );
+                setExamenes(nuevos);
+              }}
+              className="space-y-4"
+            >
+              <input
+                name="nombre"
+                placeholder="Nombre del examen"
+                className="w-full border p-2 rounded"
+                required
+              />
+
+              <textarea
+                name="instrucciones"
+                placeholder="Instrucciones para el estudiante"
+                className="w-full border p-2 rounded"
+              />
+
+              <input
+                name="duracion"
+                type="number"
+                placeholder="Duración en minutos"
+                className="w-full border p-2 rounded"
+                required
+              />
+
+              <button className="bg-indigo-600 text-white px-4 py-2 rounded">
+                Guardar examen
+              </button>
             </form>
           </div>
         </div>

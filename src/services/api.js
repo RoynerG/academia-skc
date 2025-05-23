@@ -97,4 +97,16 @@ export const crearExamen = async (data) => {
   return res.data;
 };
 
+//Obtener preguntas del examen
+export const obtenerPreguntasPorExamen = async (id_examen) => {
+  const res = await api.get(`/preguntas/examen/${id_examen}`);
+  return res.data;
+};
+
+//Crear pregunta
+export const crearPregunta = async (data) => {
+  const res = await api.post(`/preguntas`, data);
+  return res.data;
+};
+
 export default api;

@@ -12,6 +12,8 @@ import {
   actualizarModulo,
   obtenerExamenesPorModulo,
   crearExamen,
+  obtenerPreguntasPorExamen,
+  crearPregunta,
 } from "../services/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -41,6 +43,12 @@ function Admin({ usuario }) {
   const [moduloVista, setModuloVista] = useState(null);
   const [examenes, setExamenes] = useState([]);
   const [mostrarModalCrearExamen, setMostrarModalCrearExamen] = useState(false);
+  const [preguntas, setPreguntas] = useState([]);
+  const [examenSeleccionado, setExamenSeleccionado] = useState(null);
+  const [mostrarModalPreguntas, setMostrarModalPreguntas] = useState(false);
+  const [mostrarModalCrearPregunta, setMostrarModalCrearPregunta] =
+    useState(false);
+  const [tipoPregunta, setTipoPregunta] = useState("seleccion_multiple");
 
   useEffect(() => {
     obtenerTematicas()
@@ -496,6 +504,175 @@ function Admin({ usuario }) {
                 Guardar examen
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {mostrarModalCrearPregunta && examenSeleccionado && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => setMostrarModalCrearPregunta(false)}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-bold mb-4">Crear nueva pregunta</h2>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target;
+
+                const data = {
+                  id_examen: examenSeleccionado.id,
+                  enunciado: form.enunciado.value,
+                  tipo: tipoPregunta,
+                  opcion_a: form.opcion_a?.value || null,
+                  opcion_b: form.opcion_b?.value || null,
+                  opcion_c: form.opcion_c?.value || null,
+                  opcion_d: form.opcion_d?.value || null,
+                  respuesta_correcta: form.respuesta_correcta.value,
+                  puntos: parseInt(form.puntos.value || 1),
+                };
+
+                await crearPregunta(data);
+                const nuevas = await obtenerPreguntasPorExamen(
+                  examenSeleccionado.id
+                );
+                setPreguntas(nuevas);
+                setMostrarModalCrearPregunta(false);
+                form.reset();
+              }}
+              className="space-y-4"
+            >
+              <select
+                value={tipoPregunta}
+                onChange={(e) => setTipoPregunta(e.target.value)}
+                className="w-full border p-2 rounded"
+              >
+                <option value="seleccion_multiple">Selección múltiple</option>
+                <option value="verdadero_falso">Verdadero / Falso</option>
+                <option value="abierta">Respuesta abierta</option>
+              </select>
+
+              <input
+                name="enunciado"
+                placeholder="Escribe el enunciado de la pregunta"
+                className="w-full border p-2 rounded"
+                required
+              />
+
+              {tipoPregunta === "seleccion_multiple" && (
+                <div className="space-y-2">
+                  <input
+                    name="opcion_a"
+                    placeholder="Opción A"
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                  <input
+                    name="opcion_b"
+                    placeholder="Opción B"
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                  <input
+                    name="opcion_c"
+                    placeholder="Opción C"
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                  <input
+                    name="opcion_d"
+                    placeholder="Opción D"
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                  <input
+                    name="respuesta_correcta"
+                    placeholder="Respuesta correcta (A/B/C/D)"
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+              )}
+
+              {tipoPregunta === "verdadero_falso" && (
+                <select
+                  name="respuesta_correcta"
+                  className="w-full border p-2 rounded"
+                  required
+                >
+                  <option value="">Selecciona la respuesta correcta</option>
+                  <option value="Verdadero">Verdadero</option>
+                  <option value="Falso">Falso</option>
+                </select>
+              )}
+
+              {tipoPregunta === "abierta" && (
+                <input
+                  name="respuesta_correcta"
+                  placeholder="Respuesta correcta esperada"
+                  className="w-full border p-2 rounded"
+                  required
+                />
+              )}
+
+              <input
+                name="puntos"
+                type="number"
+                min="1"
+                defaultValue="1"
+                placeholder="Puntos"
+                className="w-full border p-2 rounded"
+              />
+
+              <button className="bg-green-600 text-white px-4 py-2 rounded">
+                Guardar pregunta
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {mostrarModalPreguntas && examenSeleccionado && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => {
+                setMostrarModalPreguntas(false);
+                setPreguntas([]);
+              }}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-bold mb-2">
+              Preguntas del examen: {examenSeleccionado.nombre}
+            </h2>
+
+            <button
+              className="mb-4 bg-green-600 text-white px-4 py-2 rounded"
+              onClick={() => setMostrarModalCrearPregunta(true)}
+            >
+              + Agregar pregunta
+            </button>
+
+            {preguntas.length === 0 ? (
+              <p className="text-gray-600">No hay preguntas registradas.</p>
+            ) : (
+              <ul className="space-y-3">
+                {preguntas.map((p) => (
+                  <li key={p.id} className="border p-3 rounded shadow-sm">
+                    <p className="font-semibold">{p.enunciado}</p>
+                    <p className="text-sm text-gray-600">Tipo: {p.tipo}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}

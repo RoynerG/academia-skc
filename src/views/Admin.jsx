@@ -16,6 +16,7 @@ import {
   crearPregunta,
   eliminarPregunta,
   actualizarPregunta,
+  cambiarEstadoExamen,
 } from "../services/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -369,25 +370,49 @@ function Admin({ usuario }) {
                   key={ex.id}
                   className="border p-3 rounded shadow-sm bg-white"
                 >
-                  <h3
-                    onClick={async () => {
-                      setExamenSeleccionado(ex);
-                      const data = await obtenerPreguntasPorExamen(ex.id);
-                      setPreguntas(data);
-                      setMostrarModalPreguntas(true);
-                    }}
-                    className="font-semibold text-indigo-700 hover:underline cursor-pointer"
-                  >
-                    {ex.nombre}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Duración: {ex.duracion} min · Estado:{" "}
-                    <span
-                      className={ex.activo ? "text-green-600" : "text-red-600"}
-                    >
-                      {ex.activo ? "Activo" : "Inactivo"}
-                    </span>
-                  </p>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3
+                        onClick={async () => {
+                          setExamenSeleccionado(ex);
+                          const data = await obtenerPreguntasPorExamen(ex.id);
+                          setPreguntas(data);
+                          setMostrarModalPreguntas(true);
+                        }}
+                        className="font-semibold text-indigo-700 hover:underline cursor-pointer"
+                      >
+                        {ex.nombre}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Duración: {ex.duracion} min
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={ex.activo}
+                          onChange={async () => {
+                            const nuevoEstado = !ex.activo;
+                            await cambiarEstadoExamen(ex.id, nuevoEstado);
+                            setExamenes((prev) =>
+                              prev.map((e) =>
+                                e.id === ex.id
+                                  ? { ...e, activo: nuevoEstado }
+                                  : e
+                              )
+                            );
+                          }}
+                        />
+                        {ex.activo ? (
+                          <span className="text-green-600">Activo</span>
+                        ) : (
+                          <span className="text-red-600">Inactivo</span>
+                        )}
+                      </label>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>

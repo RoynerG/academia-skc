@@ -121,4 +121,10 @@ export const eliminarPregunta = async (id) => {
   return res.data;
 };
 
+// Cambiar estado del examen (activo/inactivo)
+export const cambiarEstadoExamen = async (id, activo) => {
+  const res = await api.put(`/examenes/${id}/estado`, { activo });
+  return res.data;
+};
+
 export default api;

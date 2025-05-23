@@ -21,6 +21,7 @@ import {
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import Swal from "sweetalert2";
 
 function Admin({ usuario }) {
   const [tematicas, setTematicas] = useState([]);
@@ -785,16 +786,27 @@ function Admin({ usuario }) {
                       <button
                         className="text-red-600 hover:text-red-800 text-sm"
                         onClick={async () => {
-                          const confirm = window.confirm(
-                            "¿Eliminar esta pregunta?"
-                          );
-                          if (confirm) {
-                            await eliminarPregunta(p.id);
-                            const nuevas = await obtenerPreguntasPorExamen(
-                              examenSeleccionado.id
-                            );
-                            setPreguntas(nuevas);
-                          }
+                          Swal.fire({
+                            title: "¿Deseas eliminar esta pregunta?",
+                            text: "Esta acción no se puede deshacer",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Sí, eliminar",
+                            cancelButtonText: "Cancelar",
+                          }).then(async (result) => {
+                            if (result.isConfirmed) {
+                              await eliminarPregunta(p.id);
+                              const nuevas = await obtenerPreguntasPorExamen(
+                                examenSeleccionado.id
+                              );
+                              setPreguntas(nuevas);
+                              Swal.fire(
+                                "Eliminada",
+                                "La pregunta ha sido eliminada.",
+                                "success"
+                              );
+                            }
+                          });
                         }}
                       >
                         🗑 Eliminar

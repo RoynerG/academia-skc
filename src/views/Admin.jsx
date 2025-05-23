@@ -55,6 +55,8 @@ function Admin({ usuario }) {
   const [preguntaEditando, setPreguntaEditando] = useState(null);
   const [mostrarModalEditarPregunta, setMostrarModalEditarPregunta] =
     useState(false);
+  const [mostrarVistaPreviaExamen, setMostrarVistaPreviaExamen] =
+    useState(false);
 
   useEffect(() => {
     obtenerTematicas()
@@ -390,6 +392,17 @@ function Admin({ usuario }) {
 
                     <div className="flex items-center gap-2">
                       <label className="flex items-center cursor-pointer text-sm">
+                        <button
+                          className="text-gray-600 hover:text-black text-sm underline ml-7"
+                          onClick={async () => {
+                            setExamenSeleccionado(ex);
+                            const data = await obtenerPreguntasPorExamen(ex.id);
+                            setPreguntas(data);
+                            setMostrarVistaPreviaExamen(true);
+                          }}
+                        >
+                          👁 Vista previa
+                        </button>
                         <input
                           type="checkbox"
                           checked={ex.activo}
@@ -1118,6 +1131,68 @@ function Admin({ usuario }) {
                 ))}
               </ul>
             )}
+          </div>
+        </div>
+      )}
+
+      {mostrarVistaPreviaExamen && examenSeleccionado && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => {
+                setMostrarVistaPreviaExamen(false);
+                setExamenSeleccionado(null);
+              }}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-2xl font-bold mb-2">
+              {examenSeleccionado.nombre}
+            </h2>
+            {examenSeleccionado.instrucciones && (
+              <div className="mb-4 text-sm text-gray-700 whitespace-pre-line">
+                {examenSeleccionado.instrucciones}
+              </div>
+            )}
+
+            <div className="mb-4">
+              <button
+                className="bg-indigo-600 text-white px-4 py-2 rounded"
+                onClick={() =>
+                  alert("Aquí iría la lógica para iniciar el examen")
+                }
+              >
+                Iniciar examen
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {preguntas.map((p, index) => (
+                <div key={p.id} className="border rounded p-4 bg-gray-50">
+                  <p className="font-semibold mb-2">
+                    {index + 1}. {p.enunciado}
+                  </p>
+                  {p.tipo === "seleccion_multiple" && (
+                    <ul className="list-disc pl-6 text-sm">
+                      <li>A. {p.opcion_a}</li>
+                      <li>B. {p.opcion_b}</li>
+                      <li>C. {p.opcion_c}</li>
+                      <li>D. {p.opcion_d}</li>
+                    </ul>
+                  )}
+                  {p.tipo === "verdadero_falso" && (
+                    <p className="text-sm text-gray-700">☐ Verdadero ☐ Falso</p>
+                  )}
+                  {p.tipo === "abierta" && (
+                    <p className="text-sm text-gray-700">
+                      ________________________
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

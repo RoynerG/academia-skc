@@ -109,4 +109,16 @@ export const crearPregunta = async (data) => {
   return res.data;
 };
 
+// Actualizar pregunta
+export const actualizarPregunta = async (id, data) => {
+  const res = await api.put(`/preguntas/${id}`, data);
+  return res.data;
+};
+
+// Eliminar pregunta
+export const eliminarPregunta = async (id) => {
+  const res = await api.delete(`/preguntas/${id}`);
+  return res.data;
+};
+
 export default api;

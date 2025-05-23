@@ -14,6 +14,8 @@ import {
   crearExamen,
   obtenerPreguntasPorExamen,
   crearPregunta,
+  eliminarPregunta,
+  actualizarPregunta,
 } from "../services/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -49,6 +51,9 @@ function Admin({ usuario }) {
   const [mostrarModalCrearPregunta, setMostrarModalCrearPregunta] =
     useState(false);
   const [tipoPregunta, setTipoPregunta] = useState("seleccion_multiple");
+  const [preguntaEditando, setPreguntaEditando] = useState(null);
+  const [mostrarModalEditarPregunta, setMostrarModalEditarPregunta] =
+    useState(false);
 
   useEffect(() => {
     obtenerTematicas()
@@ -727,6 +732,36 @@ function Admin({ usuario }) {
                   <li key={p.id} className="border p-3 rounded shadow-sm">
                     <p className="font-semibold">{p.enunciado}</p>
                     <p className="text-sm text-gray-600">Tipo: {p.tipo}</p>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                        onClick={() => {
+                          setPreguntaEditando(p);
+                          setMostrarModalPreguntas(false);
+                          setTipoPregunta(p.tipo);
+                          setMostrarModalEditarPregunta(true);
+                        }}
+                      >
+                        ✏️ Editar
+                      </button>
+                      <button
+                        className="text-red-600 hover:text-red-800 text-sm"
+                        onClick={async () => {
+                          const confirm = window.confirm(
+                            "¿Eliminar esta pregunta?"
+                          );
+                          if (confirm) {
+                            await eliminarPregunta(p.id);
+                            const nuevas = await obtenerPreguntasPorExamen(
+                              examenSeleccionado.id
+                            );
+                            setPreguntas(nuevas);
+                          }
+                        }}
+                      >
+                        🗑 Eliminar
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -852,6 +887,138 @@ function Admin({ usuario }) {
               />
               <button className="bg-blue-600 text-white px-4 py-2 rounded">
                 Actualizar
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {mostrarModalEditarPregunta && preguntaEditando && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              onClick={() => {
+                setMostrarModalEditarPregunta(false);
+                setPreguntaEditando(null);
+              }}
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold mb-4">Editar pregunta</h2>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const data = {
+                  enunciado: form.enunciado.value,
+                  tipo: tipoPregunta,
+                  opcion_a: form.opcion_a?.value || null,
+                  opcion_b: form.opcion_b?.value || null,
+                  opcion_c: form.opcion_c?.value || null,
+                  opcion_d: form.opcion_d?.value || null,
+                  respuesta_correcta: form.respuesta_correcta.value,
+                  puntos: parseInt(form.puntos.value || 1),
+                };
+                await actualizarPregunta(preguntaEditando.id, data);
+                const nuevas = await obtenerPreguntasPorExamen(
+                  examenSeleccionado.id
+                );
+                setPreguntas(nuevas);
+                setMostrarModalEditarPregunta(false);
+                setPreguntaEditando(null);
+              }}
+              className="space-y-4"
+            >
+              <select
+                value={tipoPregunta}
+                onChange={(e) => setTipoPregunta(e.target.value)}
+                className="w-full border p-2 rounded"
+              >
+                <option value="seleccion_multiple">Selección múltiple</option>
+                <option value="verdadero_falso">Verdadero / Falso</option>
+                <option value="abierta">Respuesta abierta</option>
+              </select>
+
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Enunciado
+              </label>
+              <input
+                name="enunciado"
+                defaultValue={preguntaEditando.enunciado}
+                className="w-full border p-2 rounded"
+                required
+              />
+
+              {tipoPregunta === "seleccion_multiple" && (
+                <div className="space-y-2">
+                  <label className="block font-semibold">Opción A</label>
+                  <input
+                    name="opcion_a"
+                    defaultValue={preguntaEditando.opcion_a}
+                    className="w-full border p-2 rounded"
+                  />
+                  <label className="block font-semibold">Opción B</label>
+                  <input
+                    name="opcion_b"
+                    defaultValue={preguntaEditando.opcion_b}
+                    className="w-full border p-2 rounded"
+                  />
+                  <label className="block font-semibold">Opción C</label>
+                  <input
+                    name="opcion_c"
+                    defaultValue={preguntaEditando.opcion_c}
+                    className="w-full border p-2 rounded"
+                  />
+                  <label className="block font-semibold">Opción D</label>
+                  <input
+                    name="opcion_d"
+                    defaultValue={preguntaEditando.opcion_d}
+                    className="w-full border p-2 rounded"
+                  />
+                  <label className="block font-semibold">
+                    Respuesta correcta
+                  </label>
+                  <input
+                    name="respuesta_correcta"
+                    defaultValue={preguntaEditando.respuesta_correcta}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+              )}
+
+              {tipoPregunta === "verdadero_falso" && (
+                <select
+                  name="respuesta_correcta"
+                  defaultValue={preguntaEditando.respuesta_correcta}
+                  className="w-full border p-2 rounded"
+                >
+                  <option value="Verdadero">Verdadero</option>
+                  <option value="Falso">Falso</option>
+                </select>
+              )}
+
+              {tipoPregunta === "abierta" && (
+                <input
+                  name="respuesta_correcta"
+                  defaultValue={preguntaEditando.respuesta_correcta}
+                  placeholder="Respuesta correcta esperada"
+                  className="w-full border p-2 rounded"
+                />
+              )}
+
+              <label className="block font-semibold">Puntos otorgados</label>
+              <input
+                name="puntos"
+                type="number"
+                defaultValue={preguntaEditando.puntos}
+                min="1"
+                className="w-full border p-2 rounded"
+              />
+
+              <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                Actualizar pregunta
               </button>
             </form>
           </div>

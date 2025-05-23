@@ -479,19 +479,35 @@ function Admin({ usuario }) {
               }}
               className="space-y-4"
             >
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="username"
+              >
+                Nombre del examen
+              </label>
               <input
                 name="nombre"
-                placeholder="Nombre del examen"
+                placeholder="Escribe el nombre del examen"
                 className="w-full border p-2 rounded"
                 required
               />
-
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="username"
+              >
+                Instrucciones para el estudiante
+              </label>
               <textarea
                 name="instrucciones"
-                placeholder="Instrucciones para el estudiante"
+                placeholder="Escriba las instrucciones para el estudiante"
                 className="w-full border p-2 rounded"
               />
-
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="username"
+              >
+                Duracion del examen
+              </label>
               <input
                 name="duracion"
                 type="number"
@@ -556,7 +572,12 @@ function Admin({ usuario }) {
                 <option value="verdadero_falso">Verdadero / Falso</option>
                 <option value="abierta">Respuesta abierta</option>
               </select>
-
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="username"
+              >
+                Enunciado
+              </label>
               <input
                 name="enunciado"
                 placeholder="Escribe el enunciado de la pregunta"
@@ -566,30 +587,60 @@ function Admin({ usuario }) {
 
               {tipoPregunta === "seleccion_multiple" && (
                 <div className="space-y-2">
+                  <label
+                    class="block text-gray-700 text-sm font-bold mb-2"
+                    for="username"
+                  >
+                    Opción A
+                  </label>
                   <input
                     name="opcion_a"
                     placeholder="Opción A"
                     className="w-full border p-2 rounded"
                     required
                   />
+                  <label
+                    class="block text-gray-700 text-sm font-bold mb-2"
+                    for="username"
+                  >
+                    Opción B
+                  </label>
                   <input
                     name="opcion_b"
                     placeholder="Opción B"
                     className="w-full border p-2 rounded"
                     required
                   />
+                  <label
+                    class="block text-gray-700 text-sm font-bold mb-2"
+                    for="username"
+                  >
+                    Opción C
+                  </label>
                   <input
                     name="opcion_c"
                     placeholder="Opción C"
                     className="w-full border p-2 rounded"
                     required
                   />
+                  <label
+                    class="block text-gray-700 text-sm font-bold mb-2"
+                    for="username"
+                  >
+                    Opción D
+                  </label>
                   <input
                     name="opcion_d"
                     placeholder="Opción D"
                     className="w-full border p-2 rounded"
                     required
                   />
+                  <label
+                    class="block text-gray-700 text-sm font-bold mb-2"
+                    for="username"
+                  >
+                    Respuesta correcta
+                  </label>
                   <input
                     name="respuesta_correcta"
                     placeholder="Respuesta correcta (A/B/C/D)"
@@ -619,13 +670,17 @@ function Admin({ usuario }) {
                   required
                 />
               )}
-
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="username"
+              >
+                Puntos otorgados
+              </label>
               <input
                 name="puntos"
                 type="number"
                 min="1"
-                defaultValue="1"
-                placeholder="Puntos"
+                placeholder="Cantidad de puntos que vale la pregunta"
                 className="w-full border p-2 rounded"
               />
 
@@ -656,7 +711,10 @@ function Admin({ usuario }) {
 
             <button
               className="mb-4 bg-green-600 text-white px-4 py-2 rounded"
-              onClick={() => setMostrarModalCrearPregunta(true)}
+              onClick={() => {
+                setMostrarModalPreguntas(false);
+                setMostrarModalCrearPregunta(true);
+              }}
             >
               + Agregar pregunta
             </button>

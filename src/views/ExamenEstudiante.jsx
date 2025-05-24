@@ -17,6 +17,26 @@ function ExamenEstudiante() {
   const [tiempoRestante, setTiempoRestante] = useState(null);
 
   useEffect(() => {
+    // Bloquear navegación hacia atrás
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue =
+        "¿Estás seguro de que deseas salir del examen? Tu progreso se perderá.";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.history.pushState(null, null, window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, null, window.location.href);
+    };
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  useEffect(() => {
     obtenerPreguntasPorExamen(examenId).then(setPreguntas);
     obtenerExamenesPorModulo(moduloId).then((lista) => {
       const e = lista.find((ex) => ex.id == examenId);

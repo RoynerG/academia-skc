@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { obtenerTematicas, obtenerModulosPorTematica } from "../services/api";
 import TemasEstudiante from "./TemasEstudiante";
+import ExamenEstudiante from "./ExamenEstudiante";
 
 function Estudiante({ usuario }) {
   const [tematicas, setTematicas] = useState([]);
@@ -57,6 +58,10 @@ function Estudiante({ usuario }) {
           }
         />
         <Route path="/modulo/:moduloId" element={<TemasEstudiante />} />
+        <Route
+          path="/modulo/:moduloId/examen/:examenId"
+          element={<ExamenEstudiante />}
+        />
       </Routes>
     </div>
   );

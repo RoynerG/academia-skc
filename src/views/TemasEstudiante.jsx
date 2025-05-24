@@ -7,6 +7,7 @@ import {
   obtenerModulosPorTematica,
 } from "../services/api";
 import Acordeon from "../components/Acordeon";
+import Swal from "sweetalert2";
 
 function TemasEstudiante() {
   const { moduloId } = useParams();
@@ -20,7 +21,7 @@ function TemasEstudiante() {
     obtenerTemasPorModulo(moduloId).then(setTemas);
 
     obtenerExamenesPorModulo(moduloId).then((lista) => {
-      const activos = lista.filter((e) => e.estado === "activo");
+      const activos = lista.filter((e) => e.activo == 1);
       setExamenes(activos);
     });
 
@@ -33,6 +34,26 @@ function TemasEstudiante() {
       });
     });
   }, [moduloId]);
+
+  const handleIniciarExamen = (examen) => {
+    Swal.fire({
+      title: examen.nombre,
+      html: `
+        <p><strong>Duración:</strong> ${examen.duracion} minutos</p>
+        <p><strong>Instrucciones:</strong><br>${
+          examen.instrucciones || "Sin instrucciones."
+        }</p>
+      `,
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonText: "Iniciar examen",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate(`/modulo/${moduloId}/examen/${examen.id}`);
+      }
+    });
+  };
 
   return (
     <div className="p-6">
@@ -64,19 +85,28 @@ function TemasEstudiante() {
 
       <h2 className="text-xl font-semibold mt-8 mb-4">Exámenes disponibles</h2>
 
-      <ul className="space-y-2">
-        {examenes.map((e) => (
-          <li
-            key={e.id}
-            className="border p-4 rounded bg-white shadow flex justify-between items-center"
-          >
-            <span>{e.nombre}</span>
-            <button className="bg-green-600 text-white px-4 py-1 rounded">
-              Iniciar examen
-            </button>
-          </li>
-        ))}
-      </ul>
+      {examenes.length === 0 ? (
+        <p className="text-gray-500 italic">
+          No hay exámenes disponibles actualmente.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {examenes.map((e) => (
+            <li
+              key={e.id}
+              className="border p-4 rounded bg-white shadow flex justify-between items-center"
+            >
+              <span>{e.nombre}</span>
+              <button
+                className="bg-green-600 text-white px-4 py-1 rounded"
+                onClick={() => handleIniciarExamen(e)}
+              >
+                Iniciar examen
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {temaSeleccionado && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

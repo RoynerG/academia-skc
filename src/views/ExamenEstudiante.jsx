@@ -1,4 +1,3 @@
-// src/views/ExamenEstudiante.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -17,7 +16,6 @@ function ExamenEstudiante() {
   const [tiempoRestante, setTiempoRestante] = useState(null);
 
   useEffect(() => {
-    // Bloquear navegación hacia atrás
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue =
@@ -70,9 +68,12 @@ function ExamenEstudiante() {
   };
 
   const handleFinalizar = () => {
-    console.log("Respuestas enviadas:", respuestas);
-    alert("¡Examen finalizado! Revisa la consola para ver las respuestas.");
-    navigate(-1);
+    navigate("/revision-resultados", {
+      state: {
+        preguntas,
+        respuestas,
+      },
+    });
   };
 
   const actual = preguntas[preguntaActual];

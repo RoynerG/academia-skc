@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import { obtenerTematicas, obtenerModulosPorTematica } from "../services/api";
 import TemasEstudiante from "./TemasEstudiante";
 import ExamenEstudiante from "./ExamenEstudiante";
+import RevisionResultados from "./RevisionResultados";
 
 function Estudiante({ usuario }) {
   const [tematicas, setTematicas] = useState([]);
@@ -62,6 +63,7 @@ function Estudiante({ usuario }) {
           path="/modulo/:moduloId/examen/:examenId"
           element={<ExamenEstudiante />}
         />
+        <Route path="/revision-resultados" element={<RevisionResultados />} />
       </Routes>
     </div>
   );

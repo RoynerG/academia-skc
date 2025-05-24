@@ -1087,14 +1087,15 @@ function Admin({ usuario }) {
             <h2 className="text-xl font-bold mb-2">Vista previa del tema</h2>
             <h3 className="text-lg font-semibold">{temaSeleccionado.nombre}</h3>
             <div className="mt-2">
-              <h4 className="font-semibold">Contenido:</h4>
               <div
+                className="prose mb-5"
                 dangerouslySetInnerHTML={{ __html: temaSeleccionado.contenido }}
               />
             </div>
             <div className="mt-2">
               <h4 className="font-semibold">Competencias:</h4>
               <div
+                className="prose"
                 dangerouslySetInnerHTML={{
                   __html: temaSeleccionado.competencias,
                 }}
@@ -1103,6 +1104,7 @@ function Admin({ usuario }) {
             <div className="mt-2">
               <h4 className="font-semibold">Recursos:</h4>
               <div
+                className="prose"
                 dangerouslySetInnerHTML={{ __html: temaSeleccionado.recursos }}
               />
             </div>

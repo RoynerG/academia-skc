@@ -1,17 +1,49 @@
+// src/views/ExamenEstudiante.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { obtenerPreguntasPorExamen } from "../services/api";
+import {
+  obtenerPreguntasPorExamen,
+  obtenerExamenesPorModulo,
+} from "../services/api";
+import Swal from "sweetalert2";
 
 function ExamenEstudiante() {
-  const { examenId } = useParams();
+  const { examenId, moduloId } = useParams();
   const navigate = useNavigate();
   const [preguntas, setPreguntas] = useState([]);
   const [respuestas, setRespuestas] = useState({});
   const [preguntaActual, setPreguntaActual] = useState(0);
+  const [examen, setExamen] = useState(null);
+  const [tiempoRestante, setTiempoRestante] = useState(null);
 
   useEffect(() => {
     obtenerPreguntasPorExamen(examenId).then(setPreguntas);
-  }, [examenId]);
+    obtenerExamenesPorModulo(moduloId).then((lista) => {
+      const e = lista.find((ex) => ex.id == examenId);
+      if (e) {
+        setExamen(e);
+        const duracionEnSegundos = e.duracion * 60;
+        setTiempoRestante(duracionEnSegundos);
+      }
+    });
+  }, [examenId, moduloId]);
+
+  useEffect(() => {
+    if (tiempoRestante === null) return;
+    if (tiempoRestante <= 0) {
+      Swal.fire(
+        "Tiempo agotado",
+        "Tu examen ha finalizado automáticamente.",
+        "warning"
+      );
+      handleFinalizar();
+      return;
+    }
+    const intervalo = setInterval(() => {
+      setTiempoRestante((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(intervalo);
+  }, [tiempoRestante]);
 
   const handleChange = (preguntaId, value) => {
     setRespuestas((prev) => ({ ...prev, [preguntaId]: value }));
@@ -25,9 +57,24 @@ function ExamenEstudiante() {
 
   const actual = preguntas[preguntaActual];
 
+  const formatoTiempo = (segundos) => {
+    const min = Math.floor(segundos / 60);
+    const sec = segundos % 60;
+    return `${min.toString().padStart(2, "0")}:${sec
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Examen</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Examen</h1>
+        {tiempoRestante !== null && (
+          <div className="text-red-600 font-mono text-lg">
+            ⏱ Tiempo restante: {formatoTiempo(tiempoRestante)}
+          </div>
+        )}
+      </div>
 
       {preguntas.length === 0 ? (
         <p className="text-gray-600">Cargando preguntas...</p>

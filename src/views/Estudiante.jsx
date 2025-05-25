@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import {
   obtenerTematicas,
   obtenerModulosPorTematica,
@@ -14,6 +14,7 @@ function Estudiante({ usuario }) {
   const [modulosPorTematica, setModulosPorTematica] = useState({});
   const [modulosDesbloqueados, setModulosDesbloqueados] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!usuario?.id_empleado) return;
@@ -30,10 +31,11 @@ function Estudiante({ usuario }) {
 
     obtenerModulosDesbloqueados(usuario.id_empleado).then((res) => {
       const lista = res.data || res;
+      console.log(lista);
       const ids = lista.map((m) => m.id);
       setModulosDesbloqueados(ids);
     });
-  }, [usuario?.id_empleado]);
+  }, [usuario?.id_empleado, location.key]);
 
   return (
     <div className="p-6">
@@ -90,7 +92,7 @@ function Estudiante({ usuario }) {
         <Route path="/modulo/:moduloId" element={<TemasEstudiante />} />
         <Route
           path="/modulo/:moduloId/examen/:examenId"
-          element={<ExamenEstudiante />}
+          element={<ExamenEstudiante usuario={usuario} />}
         />
         <Route path="/revision-resultados" element={<RevisionResultados />} />
       </Routes>

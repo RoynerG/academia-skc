@@ -137,4 +137,17 @@ export const obtenerModulosDesbloqueados = async (id_estudiante) => {
   const res = await api.get(`/modulos/desbloqueados/${id_estudiante}`);
   return res.data.data || [];
 };
+
+//Obtener modulos aprobados
+export const obtenerModulosAprobados = async (id_estudiante) => {
+  const res = await api.get(`/resultados/usuario/${id_estudiante}`);
+  return res.data.data || [];
+};
+
+//Obtener modulo por id
+export const obtenerModuloPorId = async (id) => {
+  const res = await api.get(`/modulos/${id}`);
+  return res.data;
+};
+
 export default api;

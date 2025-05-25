@@ -5,8 +5,9 @@ import {
   obtenerExamenesPorModulo,
 } from "../services/api";
 import Swal from "sweetalert2";
+import { obtenerModuloPorId } from "../services/api";
 
-function ExamenEstudiante() {
+function ExamenEstudiante({ usuario }) {
   const { examenId, moduloId } = useParams();
   const navigate = useNavigate();
   const [preguntas, setPreguntas] = useState([]);
@@ -14,6 +15,7 @@ function ExamenEstudiante() {
   const [preguntaActual, setPreguntaActual] = useState(0);
   const [examen, setExamen] = useState(null);
   const [tiempoRestante, setTiempoRestante] = useState(null);
+  const [nombreModulo, setNombreModulo] = useState("");
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -36,6 +38,7 @@ function ExamenEstudiante() {
 
   useEffect(() => {
     obtenerPreguntasPorExamen(examenId).then(setPreguntas);
+
     obtenerExamenesPorModulo(moduloId).then((lista) => {
       const e = lista.find((ex) => ex.id == examenId);
       if (e) {
@@ -43,6 +46,10 @@ function ExamenEstudiante() {
         const duracionEnSegundos = e.duracion * 60;
         setTiempoRestante(duracionEnSegundos);
       }
+    });
+
+    obtenerModuloPorId(moduloId).then((modulo) => {
+      setNombreModulo(modulo.nombre);
     });
   }, [examenId, moduloId]);
 
@@ -72,6 +79,10 @@ function ExamenEstudiante() {
       state: {
         preguntas,
         respuestas,
+        moduloId,
+        estudianteId: usuario.id_empleado,
+        nombreModulo,
+        nombreEstudiante: usuario.nombre,
       },
     });
   };

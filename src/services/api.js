@@ -150,4 +150,10 @@ export const obtenerModuloPorId = async (id) => {
   return res.data;
 };
 
+//Obtener resultados de estudiantes
+export const obtenerResultadosEstudiantes = async () => {
+  const res = await api.get("/resultados");
+  return res.data.data || [];
+};
+
 export default api;

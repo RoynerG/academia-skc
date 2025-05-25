@@ -4,15 +4,18 @@ import {
   obtenerTematicas,
   obtenerModulosPorTematica,
   obtenerModulosDesbloqueados,
+  obtenerModulosAprobados,
 } from "../services/api";
 import TemasEstudiante from "./TemasEstudiante";
 import ExamenEstudiante from "./ExamenEstudiante";
 import RevisionResultados from "./RevisionResultados";
+import { generarCertificado } from "../utils/generarCertificadoLandscape";
 
 function Estudiante({ usuario }) {
   const [tematicas, setTematicas] = useState([]);
   const [modulosPorTematica, setModulosPorTematica] = useState({});
   const [modulosDesbloqueados, setModulosDesbloqueados] = useState([]);
+  const [modulosAprobados, setModulosAprobados] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,7 +24,6 @@ function Estudiante({ usuario }) {
 
     obtenerTematicas().then((tematicas) => {
       setTematicas(tematicas);
-
       tematicas.forEach((t) => {
         obtenerModulosPorTematica(t.id).then((modulos) => {
           setModulosPorTematica((prev) => ({ ...prev, [t.id]: modulos }));
@@ -31,9 +33,14 @@ function Estudiante({ usuario }) {
 
     obtenerModulosDesbloqueados(usuario.id_empleado).then((res) => {
       const lista = res.data || res;
-      console.log(lista);
       const ids = lista.map((m) => m.id);
       setModulosDesbloqueados(ids);
+    });
+
+    obtenerModulosAprobados(usuario.id_empleado).then((res) => {
+      const lista = res.data || res;
+      const ids = lista.map((m) => m.id_modulo);
+      setModulosAprobados(ids);
     });
   }, [usuario?.id_empleado, location.key]);
 
@@ -52,9 +59,8 @@ function Estudiante({ usuario }) {
                   <h2 className="text-xl font-semibold mb-2">{t.nombre}</h2>
                   <ul className="space-y-2">
                     {(modulosPorTematica[t.id] || []).map((m) => {
-                      const desbloqueado = modulosDesbloqueados.includes(
-                        String(m.id)
-                      );
+                      const desbloqueado = modulosDesbloqueados.includes(m.id);
+                      const aprobado = modulosAprobados.includes(m.id);
 
                       return (
                         <li
@@ -72,14 +78,26 @@ function Estudiante({ usuario }) {
                             )}
                           </div>
 
-                          {desbloqueado && (
-                            <button
-                              className="bg-blue-600 text-white px-4 py-1 rounded"
-                              onClick={() => navigate(`/modulo/${m.id}`)}
-                            >
-                              Explorar
-                            </button>
-                          )}
+                          <div className="flex gap-2">
+                            {desbloqueado && (
+                              <button
+                                className="bg-blue-600 text-white px-4 py-1 rounded"
+                                onClick={() => navigate(`/modulo/${m.id}`)}
+                              >
+                                Explorar
+                              </button>
+                            )}
+                            {aprobado && (
+                              <button
+                                onClick={() =>
+                                  generarCertificado(m.nombre, usuario.nombre)
+                                }
+                                className="bg-indigo-600 text-white px-3 py-1 rounded text-sm"
+                              >
+                                📄 Certificado
+                              </button>
+                            )}
+                          </div>
                         </li>
                       );
                     })}

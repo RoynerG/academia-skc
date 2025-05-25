@@ -22,6 +22,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import Swal from "sweetalert2";
+import ResultadosEstudiantes from "./ResultadosEstudiantes";
 
 function Admin({ usuario }) {
   const [tematicas, setTematicas] = useState([]);
@@ -58,6 +59,7 @@ function Admin({ usuario }) {
     useState(false);
   const [mostrarVistaPreviaExamen, setMostrarVistaPreviaExamen] =
     useState(false);
+  const [mostrarResultados, setMostrarResultados] = useState(false);
 
   useEffect(() => {
     obtenerTematicas()
@@ -1210,6 +1212,18 @@ function Admin({ usuario }) {
           </div>
         </div>
       )}
+      <div className="mt-10">
+        <button
+          onClick={() => setMostrarResultados(!mostrarResultados)}
+          className="bg-orange-600 text-white px-4 py-2 rounded mb-4"
+        >
+          {mostrarResultados
+            ? "🔽 Ocultar resultados"
+            : "📊 Ver resultados de estudiantes"}
+        </button>
+
+        {mostrarResultados && <ResultadosEstudiantes />}
+      </div>
     </div>
   );
 }

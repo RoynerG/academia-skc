@@ -126,5 +126,15 @@ export const cambiarEstadoExamen = async (id, activo) => {
   const res = await api.put(`/examenes/${id}/estado`, { activo });
   return res.data;
 };
+//Registrar resultado del examen
+export const registrarResultadoExamen = async (data) => {
+  const res = await api.post("/resultados/registrar", data);
+  return res.data;
+};
 
+//Regresar modulos desbloqueados del estudiante
+export const obtenerModulosDesbloqueados = async (id_estudiante) => {
+  const res = await api.get(`/modulos/desbloqueados/${id_estudiante}`);
+  return res.data.data || [];
+};
 export default api;

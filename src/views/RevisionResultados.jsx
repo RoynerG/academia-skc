@@ -1,9 +1,47 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { registrarResultadoExamen } from "../services/api";
+import { useEffect, useState } from "react";
 
 function RevisionResultados() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { preguntas = [], respuestas = {} } = location.state || {};
+  const {
+    preguntas = [],
+    respuestas = {},
+    moduloId,
+    estudianteId,
+  } = location.state || {};
+
+  const [puntajeTotal, setPuntajeTotal] = useState(0);
+  const [puntajeMaximo, setPuntajeMaximo] = useState(0);
+  const [enviado, setEnviado] = useState(false);
+
+  useEffect(() => {
+    let total = 0;
+    let max = 0;
+
+    preguntas.forEach((p) => {
+      const r = respuestas[p.id];
+      const puntos = p.puntos || 1;
+      max += puntos;
+      if (p.tipo === "abierta" && r?.trim()) total += puntos;
+      if (p.tipo !== "abierta" && r === p.respuesta_correcta) total += puntos;
+    });
+
+    const notaFinal = Math.round((total / max) * 100);
+    setPuntajeTotal(notaFinal);
+    setPuntajeMaximo(100);
+
+    if (!enviado && estudianteId && moduloId) {
+      registrarResultadoExamen({
+        id_estudiante: estudianteId,
+        id_modulo: moduloId,
+        nota: notaFinal,
+        aprobado: notaFinal >= 80,
+      });
+      setEnviado(true);
+    }
+  }, [preguntas, respuestas, estudianteId, moduloId, enviado]);
 
   if (!preguntas.length) {
     return (
@@ -20,15 +58,11 @@ function RevisionResultados() {
     );
   }
 
-  let puntajeTotal = 0;
-  let puntajeMaximo = 0;
-
   const resultados = preguntas.map((p) => {
     const r = respuestas[p.id];
     let estado = "pendiente";
     let puntos = 0;
     const maxPuntos = p.puntos || 1;
-    puntajeMaximo += maxPuntos;
 
     if (p.tipo !== "abierta") {
       if (r) {
@@ -45,8 +79,6 @@ function RevisionResultados() {
         puntos = maxPuntos;
       }
     }
-
-    puntajeTotal += puntos;
 
     return { ...p, respuestaEstudiante: r, estado, puntosObtenidos: puntos };
   });

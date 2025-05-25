@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import { obtenerTematicas, obtenerModulosPorTematica } from "../services/api";
+import {
+  obtenerTematicas,
+  obtenerModulosPorTematica,
+  obtenerModulosDesbloqueados,
+} from "../services/api";
 import TemasEstudiante from "./TemasEstudiante";
 import ExamenEstudiante from "./ExamenEstudiante";
 import RevisionResultados from "./RevisionResultados";
@@ -8,6 +12,7 @@ import RevisionResultados from "./RevisionResultados";
 function Estudiante({ usuario }) {
   const [tematicas, setTematicas] = useState([]);
   const [modulosPorTematica, setModulosPorTematica] = useState({});
+  const [modulosDesbloqueados, setModulosDesbloqueados] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,7 +25,12 @@ function Estudiante({ usuario }) {
         });
       });
     });
-  }, []);
+
+    obtenerModulosDesbloqueados(usuario.id).then((modulos) => {
+      const ids = modulos.map((m) => m.id);
+      setModulosDesbloqueados(ids);
+    });
+  }, [usuario.id]);
 
   return (
     <div className="p-6">
@@ -36,22 +46,36 @@ function Estudiante({ usuario }) {
                 <div key={t.id} className="mb-8">
                   <h2 className="text-xl font-semibold mb-2">{t.nombre}</h2>
                   <ul className="space-y-2">
-                    {(modulosPorTematica[t.id] || []).map((m) => (
-                      <li
-                        key={m.id}
-                        className="border p-3 rounded shadow bg-white"
-                      >
-                        <div className="flex justify-between items-center">
-                          <span>{m.nombre}</span>
-                          <button
-                            className="bg-blue-600 text-white px-4 py-1 rounded"
-                            onClick={() => navigate(`/modulo/${m.id}`)}
-                          >
-                            Explorar
-                          </button>
-                        </div>
-                      </li>
-                    ))}
+                    {(modulosPorTematica[t.id] || []).map((m) => {
+                      const desbloqueado = modulosDesbloqueados.includes(m.id);
+
+                      return (
+                        <li
+                          key={m.id}
+                          className={`border p-3 rounded shadow flex justify-between items-center ${
+                            desbloqueado ? "bg-white" : "bg-gray-200 opacity-60"
+                          }`}
+                        >
+                          <div>
+                            <span className="font-medium">{m.nombre}</span>
+                            {!desbloqueado && (
+                              <div className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                                <span>🔒</span> <span>Módulo bloqueado</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {desbloqueado && (
+                            <button
+                              className="bg-blue-600 text-white px-4 py-1 rounded"
+                              onClick={() => navigate(`/modulo/${m.id}`)}
+                            >
+                              Explorar
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}

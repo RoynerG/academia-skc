@@ -16,6 +16,8 @@ function Estudiante({ usuario }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!usuario?.id_empleado) return;
+
     obtenerTematicas().then((tematicas) => {
       setTematicas(tematicas);
 
@@ -26,11 +28,12 @@ function Estudiante({ usuario }) {
       });
     });
 
-    obtenerModulosDesbloqueados(usuario.id).then((modulos) => {
-      const ids = modulos.map((m) => m.id);
+    obtenerModulosDesbloqueados(usuario.id_empleado).then((res) => {
+      const lista = res.data || res;
+      const ids = lista.map((m) => m.id);
       setModulosDesbloqueados(ids);
     });
-  }, [usuario.id]);
+  }, [usuario?.id_empleado]);
 
   return (
     <div className="p-6">
@@ -47,7 +50,9 @@ function Estudiante({ usuario }) {
                   <h2 className="text-xl font-semibold mb-2">{t.nombre}</h2>
                   <ul className="space-y-2">
                     {(modulosPorTematica[t.id] || []).map((m) => {
-                      const desbloqueado = modulosDesbloqueados.includes(m.id);
+                      const desbloqueado = modulosDesbloqueados.includes(
+                        String(m.id)
+                      );
 
                       return (
                         <li

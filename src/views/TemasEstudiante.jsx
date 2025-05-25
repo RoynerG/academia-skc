@@ -9,7 +9,7 @@ import {
 import Acordeon from "../components/Acordeon";
 import Swal from "sweetalert2";
 
-function TemasEstudiante() {
+function TemasEstudiante({ modulosAprobados }) {
   const { moduloId } = useParams();
   const navigate = useNavigate();
   const [temas, setTemas] = useState([]);
@@ -67,45 +67,60 @@ function TemasEstudiante() {
       <h1 className="text-2xl font-bold mb-4">
         Temas del Módulo: {nombreModulo}
       </h1>
-
-      <ul className="space-y-2">
-        {temas.map((t) => (
-          <li
-            key={t.id}
-            onClick={() => setTemaSeleccionado(t)}
-            className="cursor-pointer border p-4 rounded bg-white shadow hover:bg-blue-50 transition-all"
-          >
-            <h3 className="font-semibold">{t.nombre}</h3>
-            <p className="text-sm text-gray-500 mt-1 italic">
-              Haz clic para ver el contenido
-            </p>
-          </li>
-        ))}
-      </ul>
-
-      <h2 className="text-xl font-semibold mt-8 mb-4">Exámenes disponibles</h2>
-
-      {examenes.length === 0 ? (
-        <p className="text-gray-500 italic">
-          No hay exámenes disponibles actualmente.
+      {temas.length === 0 ? (
+        <p className="text-gray-500 italic mb-6">
+          Este módulo aún no tiene temas registrados.
         </p>
       ) : (
         <ul className="space-y-2">
-          {examenes.map((e) => (
+          {temas.map((t) => (
             <li
-              key={e.id}
-              className="border p-4 rounded bg-white shadow flex justify-between items-center"
+              key={t.id}
+              onClick={() => setTemaSeleccionado(t)}
+              className="cursor-pointer border p-4 rounded bg-white shadow hover:bg-blue-50 transition-all"
             >
-              <span>{e.nombre}</span>
-              <button
-                className="bg-green-600 text-white px-4 py-1 rounded"
-                onClick={() => handleIniciarExamen(e)}
-              >
-                Iniciar examen
-              </button>
+              <h3 className="font-semibold">{t.nombre}</h3>
+              <p className="text-sm text-gray-500 mt-1 italic">
+                Haz clic para ver el contenido
+              </p>
             </li>
           ))}
         </ul>
+      )}
+
+      {modulosAprobados.includes(parseInt(moduloId)) ? (
+        <p className="text-green-700 italic mt-8">
+          🎉 Ya has aprobado este módulo. El examen ha sido completado.
+        </p>
+      ) : (
+        <>
+          <h2 className="text-xl font-semibold mt-8 mb-4">
+            Exámenes disponibles
+          </h2>
+
+          {examenes.length === 0 ? (
+            <p className="text-gray-500 italic">
+              No hay exámenes disponibles actualmente.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {examenes.map((e) => (
+                <li
+                  key={e.id}
+                  className="border p-4 rounded bg-white shadow flex justify-between items-center"
+                >
+                  <span>{e.nombre}</span>
+                  <button
+                    className="bg-green-600 text-white px-4 py-1 rounded"
+                    onClick={() => handleIniciarExamen(e)}
+                  >
+                    Iniciar examen
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
 
       {temaSeleccionado && (

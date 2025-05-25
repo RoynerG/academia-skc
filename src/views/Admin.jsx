@@ -237,9 +237,6 @@ function Admin({ usuario }) {
                 >
                   <div className="flex justify-between items-center">
                     <span>{m.nombre}</span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      ({temas.length} temas)
-                    </span>
                     <div className="flex gap-2">
                       <button
                         onClick={(e) => {
@@ -399,22 +396,27 @@ function Admin({ usuario }) {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <label className="flex items-center cursor-pointer text-sm">
-                        <button
-                          className="text-gray-600 hover:text-black text-sm underline ml-7"
-                          onClick={async () => {
-                            setExamenSeleccionado(ex);
-                            const data = await obtenerPreguntasPorExamen(ex.id);
-                            setPreguntas(data);
-                            setMostrarVistaPreviaExamen(true);
-                          }}
-                        >
-                          👁 Vista previa
-                        </button>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 mt-2">
+                      <button
+                        className="text-blue-600 hover:text-blue-800 text-sm underline"
+                        onClick={async () => {
+                          setExamenSeleccionado(ex);
+                          const data = await obtenerPreguntasPorExamen(ex.id);
+                          setPreguntas(data);
+                          setMostrarVistaPreviaExamen(true);
+                        }}
+                      >
+                        👁 Vista previa
+                      </button>
+
+                      <label className="flex items-center gap-2 text-sm mt-1 sm:mt-0">
                         <input
                           type="checkbox"
-                          checked={ex.activo}
+                          checked={
+                            ex.activo === 1 ||
+                            ex.activo === true ||
+                            ex.activo === "1"
+                          }
                           onChange={async () => {
                             const nuevoEstado = !ex.activo;
                             await cambiarEstadoExamen(ex.id, nuevoEstado);
@@ -440,15 +442,22 @@ function Admin({ usuario }) {
               {resumenModulo && (
                 <div className="mt-6 p-4 border rounded bg-gray-50">
                   <h3 className="font-bold text-lg mb-2">
-                    📈 Resumen del examen del modulo
+                    📈 Resumen del examen del módulo
                   </h3>
-                  <ul className="space-y-1 text-sm">
-                    <li>Aprobados: {resumenModulo.aprobados}</li>
-                    <li>No aprobados: {resumenModulo.no_aprobados}</li>
-                    <li>
-                      Promedio: {parseFloat(resumenModulo.promedio).toFixed()}
-                    </li>
-                  </ul>
+                  {resumenModulo.total === 0 || resumenModulo.total == null ? (
+                    <p className="text-gray-600 text-sm">
+                      Aún no hay resultados registrados para este módulo.
+                    </p>
+                  ) : (
+                    <ul className="space-y-1 text-sm">
+                      <li>Aprobados: {resumenModulo.aprobados}</li>
+                      <li>No aprobados: {resumenModulo.no_aprobados}</li>
+                      <li>
+                        Promedio:{" "}
+                        {parseFloat(resumenModulo.promedio || 0).toFixed(2)}
+                      </li>
+                    </ul>
+                  )}
                 </div>
               )}
             </ul>
@@ -638,10 +647,8 @@ function Admin({ usuario }) {
                 <option value="verdadero_falso">Verdadero / Falso</option>
                 <option value="abierta">Respuesta abierta</option>
               </select>
-              <label
-                class="block text-gray-700 text-sm font-bold mb-2"
-                for="username"
-              >
+
+              <label className="block text-gray-700 text-sm font-bold mb-2">
                 Enunciado
               </label>
               <input
@@ -653,58 +660,39 @@ function Admin({ usuario }) {
 
               {tipoPregunta === "seleccion_multiple" && (
                 <div className="space-y-2">
-                  <label
-                    class="block text-gray-700 text-sm font-bold mb-2"
-                    for="username"
-                  >
+                  <label className="block text-sm font-semibold">
                     Opción A
                   </label>
                   <input
                     name="opcion_a"
-                    placeholder="Opción A"
                     className="w-full border p-2 rounded"
                     required
                   />
-                  <label
-                    class="block text-gray-700 text-sm font-bold mb-2"
-                    for="username"
-                  >
+                  <label className="block text-sm font-semibold">
                     Opción B
                   </label>
                   <input
                     name="opcion_b"
-                    placeholder="Opción B"
                     className="w-full border p-2 rounded"
                     required
                   />
-                  <label
-                    class="block text-gray-700 text-sm font-bold mb-2"
-                    for="username"
-                  >
+                  <label className="block text-sm font-semibold">
                     Opción C
                   </label>
                   <input
                     name="opcion_c"
-                    placeholder="Opción C"
                     className="w-full border p-2 rounded"
                     required
                   />
-                  <label
-                    class="block text-gray-700 text-sm font-bold mb-2"
-                    for="username"
-                  >
+                  <label className="block text-sm font-semibold">
                     Opción D
                   </label>
                   <input
                     name="opcion_d"
-                    placeholder="Opción D"
                     className="w-full border p-2 rounded"
                     required
                   />
-                  <label
-                    class="block text-gray-700 text-sm font-bold mb-2"
-                    for="username"
-                  >
+                  <label className="block text-sm font-semibold">
                     Respuesta correcta
                   </label>
                   <input
@@ -736,10 +724,8 @@ function Admin({ usuario }) {
                   required
                 />
               )}
-              <label
-                class="block text-gray-700 text-sm font-bold mb-2"
-                for="username"
-              >
+
+              <label className="block text-gray-700 text-sm font-bold mb-2">
                 Puntos otorgados
               </label>
               <input
@@ -793,6 +779,7 @@ function Admin({ usuario }) {
                   <li key={p.id} className="border p-3 rounded shadow-sm">
                     <p className="font-semibold">{p.enunciado}</p>
                     <p className="text-sm text-gray-600">Tipo: {p.tipo}</p>
+                    <p className="text-sm text-gray-600">Puntaje: {p.puntos}</p>
                     <div className="flex gap-2 mt-2">
                       <button
                         className="text-blue-600 hover:text-blue-800 text-sm"
@@ -1192,17 +1179,6 @@ function Admin({ usuario }) {
                 {examenSeleccionado.instrucciones}
               </div>
             )}
-
-            <div className="mb-4">
-              <button
-                className="bg-indigo-600 text-white px-4 py-2 rounded"
-                onClick={() =>
-                  alert("Aquí iría la lógica para iniciar el examen")
-                }
-              >
-                Iniciar examen
-              </button>
-            </div>
 
             <div className="space-y-4">
               {preguntas.map((p, index) => (

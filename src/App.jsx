@@ -39,8 +39,14 @@ function App() {
 
   if (!usuario) {
     return (
-      <div className="flex justify-center items-center min-h-screen text-red-600">
-        Acceso denegado o inválido
+      <div className="flex flex-col justify-center items-center min-h-screen text-red-600">
+        <a
+          href="https://sucasainmobiliaria.com.co/mi-cuenta/"
+          className="mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded inline-flex items-center"
+        >
+          ← Regresar al inicio
+        </a>
+        <p>Acceso denegado o inválido</p>
       </div>
     );
   }

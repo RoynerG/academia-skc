@@ -5,6 +5,8 @@ import Admin from "./views/Admin";
 import { verificarFuncionario } from "./services/api";
 
 function App() {
+  console.log("API URL:", import.meta.env.VITE_API_URL);
+
   const [usuario, setUsuario] = useState(null);
   const [cargando, setCargando] = useState(true);
 

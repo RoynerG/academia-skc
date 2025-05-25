@@ -17,6 +17,7 @@ import {
   eliminarPregunta,
   actualizarPregunta,
   cambiarEstadoExamen,
+  obtenerResumenPorModulo,
 } from "../services/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -60,6 +61,7 @@ function Admin({ usuario }) {
   const [mostrarVistaPreviaExamen, setMostrarVistaPreviaExamen] =
     useState(false);
   const [mostrarResultados, setMostrarResultados] = useState(false);
+  const [resumenModulo, setResumenModulo] = useState(null);
 
   useEffect(() => {
     obtenerTematicas()
@@ -109,6 +111,10 @@ function Admin({ usuario }) {
     obtenerExamenesPorModulo(modulo.id)
       .then(setExamenes)
       .catch((err) => console.error("Error cargando exámenes:", err));
+
+    obtenerResumenPorModulo(modulo.id)
+      .then(setResumenModulo)
+      .catch((err) => console.error("Error cargando resumen:", err));
   };
 
   const handleCrearTema = (e) => {
@@ -431,6 +437,20 @@ function Admin({ usuario }) {
                   </div>
                 </li>
               ))}
+              {resumenModulo && (
+                <div className="mt-6 p-4 border rounded bg-gray-50">
+                  <h3 className="font-bold text-lg mb-2">
+                    📈 Resumen del examen del modulo
+                  </h3>
+                  <ul className="space-y-1 text-sm">
+                    <li>Aprobados: {resumenModulo.aprobados}</li>
+                    <li>No aprobados: {resumenModulo.no_aprobados}</li>
+                    <li>
+                      Promedio: {parseFloat(resumenModulo.promedio).toFixed()}
+                    </li>
+                  </ul>
+                </div>
+              )}
             </ul>
           )}
         </>

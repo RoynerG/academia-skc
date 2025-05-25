@@ -156,4 +156,10 @@ export const obtenerResultadosEstudiantes = async () => {
   return res.data.data || [];
 };
 
+//Obtener resumen por modulo
+export const obtenerResumenPorModulo = async (id_modulo) => {
+  const res = await api.get(`/resultados/resumen/${id_modulo}`);
+  return res.data.data;
+};
+
 export default api;

@@ -14,8 +14,8 @@ function TemasEstudiante({ modulosAprobados }) {
   const navigate = useNavigate();
   const [temas, setTemas] = useState([]);
   const [examenes, setExamenes] = useState([]);
-  const [nombreModulo, setNombreModulo] = useState("");
   const [temaSeleccionado, setTemaSeleccionado] = useState(null);
+  const [moduloActual, setModuloActual] = useState(null);
 
   useEffect(() => {
     obtenerTemasPorModulo(moduloId).then(setTemas);
@@ -28,8 +28,8 @@ function TemasEstudiante({ modulosAprobados }) {
     obtenerTematicas().then((tematicas) => {
       tematicas.forEach((t) => {
         obtenerModulosPorTematica(t.id).then((modulos) => {
-          const m = modulos.find((m) => m.id == moduloId);
-          if (m) setNombreModulo(m.nombre);
+          const modulo = modulos.find((m) => m.id == moduloId);
+          if (modulo) setModuloActual(modulo);
         });
       });
     });
@@ -63,10 +63,52 @@ function TemasEstudiante({ modulosAprobados }) {
       >
         ← Regresar
       </button>
-
       <h1 className="text-2xl font-bold mb-4">
-        Temas del Módulo: {nombreModulo}
+        {" "}
+        Módulo: {moduloActual?.nombre || "Cargando..."}
       </h1>
+      {/* Mostrar info del módulo si está disponible */}
+      {moduloActual && (
+        <div className="mb-6 space-y-3">
+          {moduloActual.objetivos && (
+            <div>
+              <h3 className="font-semibold">🎯 Objetivos</h3>
+              <div
+                className="prose text-sm"
+                dangerouslySetInnerHTML={{ __html: moduloActual.objetivos }}
+              />
+            </div>
+          )}
+          {moduloActual.competencias && (
+            <div>
+              <h3 className="font-semibold">💡 Competencias</h3>
+              <div
+                className="prose text-sm"
+                dangerouslySetInnerHTML={{ __html: moduloActual.competencias }}
+              />
+            </div>
+          )}
+          {moduloActual.actividades && (
+            <div>
+              <h3 className="font-semibold">📝 Actividades</h3>
+              <div
+                className="prose text-sm"
+                dangerouslySetInnerHTML={{ __html: moduloActual.actividades }}
+              />
+            </div>
+          )}
+          {moduloActual.observaciones && (
+            <div>
+              <h3 className="font-semibold">📌 Observaciones</h3>
+              <div
+                className="prose text-sm"
+                dangerouslySetInnerHTML={{ __html: moduloActual.observaciones }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+      <h2 className="text-2xl font-bold mb-4">Temas del Módulo:</h2>
       {temas.length === 0 ? (
         <p className="text-gray-500 italic mb-6">
           Este módulo aún no tiene temas registrados.

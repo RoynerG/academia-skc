@@ -62,6 +62,11 @@ function Admin({ usuario }) {
     useState(false);
   const [mostrarResultados, setMostrarResultados] = useState(false);
   const [resumenModulo, setResumenModulo] = useState(null);
+  const [moduloObservaciones, setModuloObservaciones] = useState("");
+  const [moduloCompetencias, setModuloCompetencias] = useState("");
+  const [moduloActividades, setModuloActividades] = useState("");
+  const [moduloObjetivos, setModuloObjetivos] = useState("");
+  const [mostrarModalCrearModulo, setMostrarModalCrearModulo] = useState(false);
 
   useEffect(() => {
     obtenerTematicas()
@@ -69,6 +74,21 @@ function Admin({ usuario }) {
       .catch((err) => console.error("Error cargando temáticas:", err))
       .finally(() => setCargandoTematicas(false));
   }, []);
+
+  useEffect(() => {
+    if (moduloEditando) {
+      setModuloObservaciones(moduloEditando.observaciones || "");
+      setModuloCompetencias(moduloEditando.competencias || "");
+      setModuloActividades(moduloEditando.actividades || "");
+      setModuloObjetivos(moduloEditando.objetivos || "");
+    } else {
+      // limpia cuando se cierra el modal
+      setModuloObservaciones("");
+      setModuloCompetencias("");
+      setModuloActividades("");
+      setModuloObjetivos("");
+    }
+  }, [moduloEditando]);
 
   const seleccionarTematica = (tematica) => {
     if (tematicaSeleccionada?.id === tematica.id) {
@@ -196,34 +216,111 @@ function Admin({ usuario }) {
           <h2 className="text-lg font-semibold mb-2">
             Módulos de: {tematicaSeleccionada.nombre}
           </h2>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const nombre = e.target.nombre.value;
-              if (!nombre) return;
-              crearModulo({
-                nombre,
-                id_tematica: tematicaSeleccionada.id,
-              }).then(() => {
-                e.target.reset();
-                return obtenerModulosPorTematica(tematicaSeleccionada.id).then(
-                  setModulos
-                );
-              });
-            }}
-            className="mb-4 flex gap-2"
+          <button
+            className="mb-4 bg-green-600 text-white px-4 py-2 rounded"
+            onClick={() => setMostrarModalCrearModulo(true)}
           >
-            <input
-              type="text"
-              name="nombre"
-              placeholder="Nuevo módulo"
-              className="border p-2 rounded w-full"
-            />
-            <button className="bg-green-600 text-white px-4 py-2 rounded">
-              Agregar
-            </button>
-          </form>
+            + Agregar nuevo módulo
+          </button>
+
+          {mostrarModalCrearModulo && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded shadow-lg max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
+                <button
+                  className="absolute top-2 right-2 text-gray-500 hover:text-black"
+                  onClick={() => {
+                    setMostrarModalCrearModulo(false);
+                    setModuloObservaciones("");
+                    setModuloCompetencias("");
+                    setModuloActividades("");
+                    setModuloObjetivos("");
+                  }}
+                >
+                  ✕
+                </button>
+                <h2 className="text-xl font-bold mb-4">Crear nuevo módulo</h2>
+
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const nombre = e.target.nombre.value;
+                    const data = {
+                      nombre,
+                      id_tematica: tematicaSeleccionada.id,
+                      observaciones: moduloObservaciones,
+                      competencias: moduloCompetencias,
+                      actividades: moduloActividades,
+                      objetivos: moduloObjetivos,
+                    };
+
+                    await crearModulo(data);
+                    setMostrarModalCrearModulo(false);
+                    e.target.reset();
+                    setModuloObservaciones("");
+                    setModuloCompetencias("");
+                    setModuloActividades("");
+                    setModuloObjetivos("");
+
+                    await obtenerModulosPorTematica(
+                      tematicaSeleccionada.id
+                    ).then(setModulos);
+                  }}
+                  className="space-y-4"
+                >
+                  <input
+                    name="nombre"
+                    placeholder="Nombre del módulo"
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+
+                  <div className="space-y-2 mb-12">
+                    <label className="font-semibold block">Observaciones</label>
+                    <ReactQuill
+                      theme="snow"
+                      value={moduloObservaciones}
+                      onChange={setModuloObservaciones}
+                      className="bg-white h-28"
+                    />
+                  </div>
+
+                  <div className="space-y-2 mb-12">
+                    <label className="font-semibold block">Competencias</label>
+                    <ReactQuill
+                      theme="snow"
+                      value={moduloCompetencias}
+                      onChange={setModuloCompetencias}
+                      className="bg-white h-28"
+                    />
+                  </div>
+
+                  <div className="space-y-2 mb-12">
+                    <label className="font-semibold block">Actividades</label>
+                    <ReactQuill
+                      theme="snow"
+                      value={moduloActividades}
+                      onChange={setModuloActividades}
+                      className="bg-white h-28"
+                    />
+                  </div>
+
+                  <div className="space-y-2 mb-12">
+                    <label className="font-semibold block">Objetivos</label>
+                    <ReactQuill
+                      theme="snow"
+                      value={moduloObjetivos}
+                      onChange={setModuloObjetivos}
+                      className="bg-white h-28"
+                    />
+                  </div>
+
+                  <button className="bg-green-600 text-white px-4 py-2 rounded">
+                    Crear módulo
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
 
           {cargandoModulos ? (
             <p className="text-gray-600">Cargando módulos...</p>
@@ -920,7 +1017,7 @@ function Admin({ usuario }) {
 
       {mostrarModalEditarModulo && moduloEditando && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-md relative">
+          <div className="bg-white p-6 rounded shadow-lg max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-black"
               onClick={() => {
@@ -931,13 +1028,24 @@ function Admin({ usuario }) {
               ✕
             </button>
             <h2 className="text-xl font-bold mb-4">Editar módulo</h2>
+
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
                 const nombre = e.target.nombre.value;
-                await actualizarModulo(moduloEditando.id, { nombre });
+
+                const data = {
+                  nombre,
+                  observaciones: moduloObservaciones,
+                  competencias: moduloCompetencias,
+                  actividades: moduloActividades,
+                  objetivos: moduloObjetivos,
+                };
+
+                await actualizarModulo(moduloEditando.id, data);
                 setMostrarModalEditarModulo(false);
                 setModuloEditando(null);
+
                 await obtenerModulosPorTematica(tematicaSeleccionada.id).then(
                   setModulos
                 );
@@ -947,11 +1055,53 @@ function Admin({ usuario }) {
               <input
                 name="nombre"
                 defaultValue={moduloEditando.nombre}
-                className="w-full border p-2 rounded"
                 placeholder="Nombre del módulo"
+                className="w-full border p-2 rounded"
+                required
               />
+
+              <div className="space-y-2 mb-12">
+                <label className="font-semibold block">Observaciones</label>
+                <ReactQuill
+                  theme="snow"
+                  value={moduloObservaciones}
+                  onChange={setModuloObservaciones}
+                  className="bg-white h-28"
+                />
+              </div>
+
+              <div className="space-y-2 mb-12">
+                <label className="font-semibold block">Competencias</label>
+                <ReactQuill
+                  theme="snow"
+                  value={moduloCompetencias}
+                  onChange={setModuloCompetencias}
+                  className="bg-white h-28"
+                />
+              </div>
+
+              <div className="space-y-2 mb-12">
+                <label className="font-semibold block">Actividades</label>
+                <ReactQuill
+                  theme="snow"
+                  value={moduloActividades}
+                  onChange={setModuloActividades}
+                  className="bg-white h-28"
+                />
+              </div>
+
+              <div className="space-y-2 mb-12">
+                <label className="font-semibold block">Objetivos</label>
+                <ReactQuill
+                  theme="snow"
+                  value={moduloObjetivos}
+                  onChange={setModuloObjetivos}
+                  className="bg-white h-28"
+                />
+              </div>
+
               <button className="bg-blue-600 text-white px-4 py-2 rounded">
-                Actualizar
+                Actualizar módulo
               </button>
             </form>
           </div>
@@ -1140,8 +1290,45 @@ function Admin({ usuario }) {
               ✕
             </button>
 
-            <h2 className="text-xl font-bold mb-2">Vista previa del módulo</h2>
             <h3 className="text-lg font-semibold mb-4">{moduloVista.nombre}</h3>
+            {moduloVista.observaciones && (
+              <div className="mb-4">
+                <h4 className="font-semibold">Observaciones:</h4>
+                <div
+                  className="prose text-sm"
+                  dangerouslySetInnerHTML={{
+                    __html: moduloVista.observaciones,
+                  }}
+                />
+              </div>
+            )}
+            {moduloVista.competencias && (
+              <div className="mb-4">
+                <h4 className="font-semibold">Competencias:</h4>
+                <div
+                  className="prose text-sm"
+                  dangerouslySetInnerHTML={{ __html: moduloVista.competencias }}
+                />
+              </div>
+            )}
+            {moduloVista.actividades && (
+              <div className="mb-4">
+                <h4 className="font-semibold">Actividades:</h4>
+                <div
+                  className="prose text-sm"
+                  dangerouslySetInnerHTML={{ __html: moduloVista.actividades }}
+                />
+              </div>
+            )}
+            {moduloVista.objetivos && (
+              <div className="mb-4">
+                <h4 className="font-semibold">Objetivos:</h4>
+                <div
+                  className="prose text-sm"
+                  dangerouslySetInnerHTML={{ __html: moduloVista.objetivos }}
+                />
+              </div>
+            )}
 
             {moduloVista.temas.length === 0 ? (
               <p className="text-gray-600">Este módulo no tiene temas aún.</p>

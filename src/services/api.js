@@ -38,8 +38,8 @@ export const crearTematica = async (nombre) => {
 };
 
 // Crear un nuevo módulo
-export const crearModulo = async ({ nombre, id_tematica }) => {
-  const res = await api.post("/modulos", { nombre, id_tematica });
+export const crearModulo = async (data) => {
+  const res = await api.post("/modulos", data);
   return res.data;
 };
 

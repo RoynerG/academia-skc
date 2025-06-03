@@ -8,6 +8,8 @@ function ResultadosEstudiantes() {
     obtenerResultadosEstudiantes().then(setResultados);
   }, []);
 
+  console.log(resultados);
+
   return (
     <div className="mt-10">
       <h2 className="text-xl font-bold mb-4">📊 Resultados de Estudiantes</h2>
@@ -32,7 +34,7 @@ function ResultadosEstudiantes() {
                 <td className="p-2 border">{r.modulo}</td>
                 <td className="p-2 border">{r.nota}</td>
                 <td className="p-2 border">
-                  {r.aprobado ? "✅ Aprobado" : "❌ No aprobado"}
+                  {r.aprobado == "1" ? "✅ Aprobado" : "❌ No aprobado"}
                 </td>
                 <td className="p-2 border">{r.intento}</td>
                 <td className="p-2 border">

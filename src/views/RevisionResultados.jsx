@@ -11,6 +11,7 @@ function RevisionResultados() {
     respuestas = {},
     moduloId,
     estudianteId,
+    examenId,
   } = location.state || {};
 
   const [puntajeTotal, setPuntajeTotal] = useState(0);
@@ -38,10 +39,10 @@ function RevisionResultados() {
       const data = {
         id_estudiante: estudianteId,
         id_modulo: moduloId,
+        id_examen: examenId,
         nota: notaFinal,
         aprobado: notaFinal >= 80,
       };
-
       console.log("Enviando resultado:", data);
       registrarResultadoExamen(data);
       enviadoRef.current = true;
